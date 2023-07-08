@@ -1,6 +1,9 @@
 # psef
 PSEF (Portable SPWN Executable Format) - an executable file format for writing code in any language and running it in SPWN
 
+# Usage
+See [samples](./samples) folder.
+
 # Instruction Set
 - NOP: 0 (no operation)
 - CONST: 1 (pushes value onto stack)
