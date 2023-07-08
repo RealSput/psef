@@ -1,0 +1,316 @@
+not_broken_format = (let str, let arr) {
+  let result = '';
+  let placeholderIndex = 0;
+
+  let n_dis = false;
+  for i in 0..str.length {
+	if (!n_dis) {
+    if (str[i] == '{' && str[i + 1] == '}') {
+      if (placeholderIndex < arr.length) {
+        result += arr[placeholderIndex];
+        placeholderIndex++;
+		n_dis = true;
+      } else {
+        result += '{}';
+      }
+    } else {
+      result += str[i];
+    }
+	} else {
+	n_dis = false;
+	}
+  }
+  
+
+  return result;
+}
+
+let sects = {
+    VARS: {},
+    INSTR: []
+}
+
+let stack = [];
+let ret_val = null;
+
+ascii_table = ['AA==', 'AQ==', 'Ag==', 'Aw==', 'BA==', 'BQ==', 'Bg==', 'Bw==', 'CA==', 'CQ==', 'Cg==', 'Cw==', 'DA==', 'DQ==', 'Dg==', 'Dw==', 'EA==', 'EQ==', 'Eg==', 'Ew==', 'FA==', 'FQ==', 'Fg==', 'Fw==', 'GA==', 'GQ==', 'Gg==', 'Gw==', 'HA==', 'HQ==', 'Hg==', 'Hw==', 'IA==', 'IQ==', 'Ig==', 'Iw==', 'JA==', 'JQ==', 'Jg==', 'Jw==', 'KA==', 'KQ==', 'Kg==', 'Kw==', 'LA==', 'LQ==', 'Lg==', 'Lw==', 'MA==', 'MQ==', 'Mg==', 'Mw==', 'NA==', 'NQ==', 'Ng==', 'Nw==', 'OA==', 'OQ==', 'Og==', 'Ow==', 'PA==', 'PQ==', 'Pg==', 'Pw==', 'QA==', 'QQ==', 'Qg==', 'Qw==', 'RA==', 'RQ==', 'Rg==', 'Rw==', 'SA==', 'SQ==', 'Sg==', 'Sw==', 'TA==', 'TQ==', 'Tg==', 'Tw==', 'UA==', 'UQ==', 'Ug==', 'Uw==', 'VA==', 'VQ==', 'Vg==', 'Vw==', 'WA==', 'WQ==', 'Wg==', 'Ww==', 'XA==', 'XQ==', 'Xg==', 'Xw==', 'YA==', 'YQ==', 'Yg==', 'Yw==', 'ZA==', 'ZQ==', 'Zg==', 'Zw==', 'aA==', 'aQ==', 'ag==', 'aw==', 'bA==', 'bQ==', 'bg==', 'bw==', 'cA==', 'cQ==', 'cg==', 'cw==', 'dA==', 'dQ==', 'dg==', 'dw==', 'eA==', 'eQ==', 'eg==', 'ew==', 'fA==', 'fQ==', 'fg==', 'fw==', 'woA=', 'woE=', 'woI=', 'woM=', 'woQ=', 'woU=', 'woY=', 'woc=', 'wog=', 'wok=', 'woo=', 'wos=', 'wow=', 'wo0=', 'wo4=', 'wo8=', 'wpA=', 'wpE=', 'wpI=', 'wpM=', 'wpQ=', 'wpU=', 'wpY=', 'wpc=', 'wpg=', 'wpk=', 'wpo=', 'wps=', 'wpw=', 'wp0=', 'wp4=', 'wp8=', 'wqA=', 'wqE=', 'wqI=', 'wqM=', 'wqQ=', 'wqU=', 'wqY=', 'wqc=', 'wqg=', 'wqk=', 'wqo=', 'wqs=', 'wqw=', 'wq0=', 'wq4=', 'wq8=', 'wrA=', 'wrE=', 'wrI=', 'wrM=', 'wrQ=', 'wrU=', 'wrY=', 'wrc=', 'wrg=', 'wrk=', 'wro=', 'wrs=', 'wrw=', 'wr0=', 'wr4=', 'wr8=', 'w4A=', 'w4E=', 'w4I=', 'w4M=', 'w4Q=', 'w4U=', 'w4Y=', 'w4c=', 'w4g=', 'w4k=', 'w4o=', 'w4s=', 'w4w=', 'w40=', 'w44=', 'w48=', 'w5A=', 'w5E=', 'w5I=', 'w5M=', 'w5Q=', 'w5U=', 'w5Y=', 'w5c=', 'w5g=', 'w5k=', 'w5o=', 'w5s=', 'w5w=', 'w50=', 'w54=', 'w58=', 'w6A=', 'w6E=', 'w6I=', 'w6M=', 'w6Q=', 'w6U=', 'w6Y=', 'w6c=', 'w6g=', 'w6k=', 'w6o=', 'w6s=', 'w6w=', 'w60=', 'w64=', 'w68=', 'w7A=', 'w7E=', 'w7I=', 'w7M=', 'w7Q=', 'w7U=', 'w7Y=', 'w7c=', 'w7g=', 'w7k=', 'w7o=', 'w7s=', 'w7w=', 'w70=', 'w74=', 'w78=']
+
+slice_str = (str, let start: @number, let end: @number = 0) {
+  length = str.length;
+  let slicedString = '';
+
+  if (start < 0) {
+    start = $.max(length + start, 0);
+  }
+
+  end = end if end != null else length;
+  if (end < 0) {
+    end = $.max(length + end, 0);
+  } else {
+    end = $.min(end, length);
+  }
+
+  for i in start..end {
+    slicedString += str[i];
+  }
+
+  return slicedString;
+}
+
+slice_arr = (arr, start: @number, let end: @number = 0) {
+  length = arr.length;
+  let slicedArray = [];
+
+  if (start < 0) {
+    start = $.max(length + start, 0);
+  }
+
+  end = end if end != null else length;
+  if (end < 0) {
+    end = $.max(length + end, 0);
+  } else {
+    end = $.min(end, length);
+  }
+
+  for i in start..end {
+    slicedArray.push(arr[i]);
+  }
+
+  return slicedArray;
+}
+
+
+charCodeAt = (char: @string) {
+  if char.length == 1 {
+    b64 = $.b64encode(char)
+    return ascii_table.index(b64)
+  } else {
+    throw "Parameter 'char' must be a single character."
+  }
+}
+
+fromCharCode = (int: @number) {
+  if int < 256 {
+    return $.b64decode(ascii_table[int])
+  } else {
+    throw "Ascii code cannot be bigger than 255."
+  }
+}
+
+keys = (dict) {
+	let k = [];
+	for i in dict {
+		k.push(i[0]);
+	}
+	return k;
+}
+
+let opcodes = {
+		_0: {
+			arg_nums: 0,
+			fn: () {}
+		},
+        _1: {
+            arg_nums: 1,
+            fn: (args) {
+                stack.push(args[0]);
+            }
+        },
+        _2: {
+            arg_nums: 0,
+            fn: () {
+                let a = stack.pop();
+                let b = stack.pop();
+                stack.push(b + a);
+            }
+        },
+        _3: {
+            arg_nums: 0,
+            fn: () {
+                $.print(stack.pop());
+            }
+        },
+		_4: {
+            arg_nums: 1,
+            fn: (args) {
+                stack.push(sects.VARS[args[0] as @string])
+            }
+        },
+		_5: {
+            arg_nums: 1,
+            fn: (args) {
+                let sects.VARS[args[0] as @string] = stack.pop();
+            }
+        },
+		_6: {
+            arg_nums: 1,
+            fn: (args) {
+                let sects.VARS[args[0] as @string] = stack[stack.length - 1];
+            }
+        },
+		_7: {
+            arg_nums: 0,
+            fn: () {
+                ret_val = stack.pop();
+            }
+        },
+		_8: {
+            arg_nums: 0,
+            fn: () {
+                stack.push($.get_input(stack.pop()));
+            }
+        },
+		_9: {
+            arg_nums: 0,
+            fn: () {
+				let substr = stack.pop();
+				let str = stack.pop();
+				
+				if (charCodeAt(substr[substr.length - 1]) == 13) {
+					substr = substr.split('');
+					$.remove_index(substr, substr.length - 1);
+					substr = substr.join('');
+				} else if (charCodeAt(str[str.length - 1]) == 13) {
+					str = str.split('');
+					$.remove_index(str, str.length - 1);
+					str = str.join('');
+				}
+				
+                stack.push(str.fmt(substr));
+            }
+        },
+};
+
+opcode_names = {
+	NOP: 0,
+	CONST: 1,
+	ADD: 2,
+	PRINT: 3,
+	LOAD: 4,
+	SET: 5,
+	CLONE: 6,
+	RET: 7,
+	INPUT: 8,
+	FMT: 9
+};
+
+let magic_nums = [0xCA, 0xFE, 0xBA, 0xBE];
+let instr = 0x9F;
+let separator = 0xCD;
+let [section_start, section_end] = [0xF8, 0xE0];
+let def_ind_st = 0x82;
+let def_ind_fn = 0x83;
+let instr_arg_sep = 0x1f;
+
+separator = fromCharCode(separator);
+magic_nums = magic_nums.map(x => fromCharCode(x)).join('');
+section_start = fromCharCode(section_start);
+section_end = fromCharCode(section_end);
+def_ind_st = fromCharCode(def_ind_st);
+def_ind_fn = fromCharCode(def_ind_fn);
+instr = fromCharCode(instr);
+instr_arg_sep = fromCharCode(instr_arg_sep);
+
+let run = (file) {
+    let parsed = slice_arr(file.split(separator).map(x => x.replace('\n', '')), 0, -1)
+    let bg_types = {
+        def_ind_st,
+        section_start,
+        def_ind_fn,
+        section_end,
+        instr,
+        instr_arg_sep
+    };
+    let rev_bg_types = {};
+
+    for i in bg_types {
+        // i is array, key is first, value is second
+		rev_bg_types[i[1]] = i[0];
+    }
+    if (parsed[0] == magic_nums) {
+        $.remove_index(parsed, 0);
+	}
+    else {
+        throw "file is not in .psef format!";
+	}
+
+    let curr_section = null;
+    let curr_val = null;
+
+   for x in parsed {
+        let _type = rev_bg_types[x[0]];
+        let end_type;
+        if (x[x.length - 1] in rev_bg_types) {
+            end_type = rev_bg_types[x[x.length - 1]];
+        }
+        keys(rev_bg_types).map(z => x = x.replace(z, ''));
+        if (_type == "section_start") {
+            curr_section = x;
+        } else if (_type == "def_ind_st") {
+            curr_val = x;
+        } else if (_type == "def_ind_fn") {
+            sects.VARS[x] = curr_val;
+            curr_val = null;
+        } else if (_type == "instr") {
+            let instr = opcodes['_' + (charCodeAt(x[0]) as @string)];
+			x = x.split('');
+			$.remove_index(x, 0);
+            x = x.join('').split(instr_arg_sep);
+			for i in 0..x.length {
+				let v = x[i].split('');
+				if (v.length > 1) {
+					$.remove_index(v, 0);
+					v = v.join('') as @number;
+				} else {
+					v = v.join('');
+				}
+				x[i] = v;
+			}
+			if (instr.arg_nums > 0) {
+				instr.fn(x);
+			} else {
+				instr.fn();
+			}	
+        }
+    }
+	
+	if (ret_val != null) {
+		return ret_val;
+	}
+};
+
+createModule = () { 
+	let str = ["{}{}".fmt([magic_nums, separator])];
+	create_variables = (vars: @array) {
+		str.push("{}VARS{}".fmt([section_start, separator]));
+		for i in 0..vars.length {
+			let entry = vars[i];
+			str.push("{}{}{}".fmt([def_ind_st, entry, separator]));
+			str.push("{}{}{}".fmt([def_ind_fn, i, separator]))
+		}
+		str.push("{}{}".fmt([section_end, separator]));
+		str.push('');
+	}
+    create_instructions = (instrs: @array) {
+		str.push("{}INSTR{}".fmt([section_start, separator]));
+		for i in instrs {
+			let c = "{}{}".fmt([instr, fromCharCode(i[0])]);
+			if (i.length > 1) {
+				let args = i[1];
+				c += instr_arg_sep;
+				c += args.join(instr_arg_sep)
+			}
+			c += separator;
+			str.push(c);
+		}
+		str.push("{}{}".fmt([section_end, separator]));
+	}
+	export = () => str.join('\n');
+	return { create_variables, create_instructions, export }
+};
+
+import_module = (filename) {
+	return run($.readfile(filename));
+};
+
+return { import_module, createModule, run, instructions: opcode_names };
