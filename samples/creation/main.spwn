@@ -1,0 +1,14 @@
+psef = import "../../src/psef.spwn";
+extract psef.instructions;
+
+let module = psef.createModule();
+module.create_variables(["What is your name? ", "Hello, {}!"]);
+module.create_instructions([
+	[LOAD, [1]], // loads variable 1 onto stack
+	[LOAD, [0]], // loads variable 0 onto stack
+	[INPUT], // gets input from user
+	[FMT], // formats "Hello, {}" with the user input
+	[RET] // returns input
+])
+module = module.export();
+$.writefile("echo.psef", module);
