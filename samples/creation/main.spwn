@@ -1,8 +1,8 @@
 psef = import "../../src/psef.spwn";
-extract psef.instructions;
+extract psef.instructions; // we do this so we can use instructions like `LOAD` without having to type `psef.instructions` every time
 
-let module = psef.createModule();
-module.create_variables(["What is your name? ", "Hello, {}!"]);
+let module = psef.createModule(); // this is where our module starts
+module.create_variables(["What is your name? ", "Hello, {}!"]); // sets the string "What is your name? " to variable 0 and "Hello, {}!" to variable 1
 module.create_instructions([
 	[LOAD, [1]], // loads variable 1 onto stack
 	[LOAD, [0]], // loads variable 0 onto stack
@@ -10,5 +10,5 @@ module.create_instructions([
 	[FMT], // formats "Hello, {}" with the user input
 	[RET] // returns input
 ])
-module = module.export();
+module = module.export(); // converts our module to .psef format
 $.writefile("echo.psef", module);
