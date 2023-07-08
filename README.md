@@ -15,3 +15,5 @@ See [samples](./samples) folder.
 - RET: 7 (returns topmost value on stack)
 - INPUT: 8 (gets user input and pushes result onto stack)
 - FMT: 9 (formats a string with a substring)
+- (not available): 10 (not an instruction, used by compiler & parser as marker)
+- INIT: 11 (creates a new variable with an empty value)
