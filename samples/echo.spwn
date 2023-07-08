@@ -1,0 +1,3 @@
+extract import "../src/psef.spwn";
+let formatted = import_module("echo.psef");
+$.print(formatted); // prints "Hello, (name here)!"
